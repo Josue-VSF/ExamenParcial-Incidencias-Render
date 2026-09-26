@@ -1,6 +1,7 @@
 using ExamenParcial_Incidencias_Render.Data;
 using ExamenParcial_Incidencias_Render.Models;
 using ExamenParcial_Incidencias_Render.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -56,7 +57,20 @@ builder.Services.AddHttpClient<IPieSocketPublisher, PieSocketPublisher>(client =
     client.Timeout = TimeSpan.FromSeconds(10);
 });
 
+// En Render el TLS termina en su proxy y el contenedor recibe HTTP plano.
+// Sin esto, la app cree que la peticion no es segura y rompe HSTS y la
+// redireccion a HTTPS. Se confia en los encabezados que inyecta el proxy.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 var app = builder.Build();
+
+// Debe ir antes de UseHsts / UseHttpsRedirection para que lean el protocolo real.
+app.UseForwardedHeaders();
 
 if (app.Environment.IsDevelopment())
 {

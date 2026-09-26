@@ -22,4 +22,12 @@
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.11" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- appsettings.Local.json guarda las claves reales de Redis, Algolia y PieHost.
+         Se lee en desarrollo desde la raiz del proyecto, pero jamas se copia a la
+         salida de compilacion ni a la imagen de Docker. En Render los secretos
+         llegan como variables de entorno. -->
+    <Content Update="appsettings.Local.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
 </Project>
