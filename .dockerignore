@@ -1,0 +1,21 @@
+## Artefactos de compilacion
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.idea/
+
+## Base de datos local: en Render se recrea sola al arrancar
+**/*.db
+**/*.db-shm
+**/*.db-wal
+
+## Credenciales locales: NUNCA dentro de la imagen.
+## En Render se inyectan como variables de entorno (ConnectionStrings__RedisConnection).
+appsettings.Local.json
+
+## Git
+.git/
+.gitignore
+Dockerfile
+.dockerignore

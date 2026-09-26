@@ -31,6 +31,21 @@ builder.Services.AddControllersWithViews();
 builder.Services.Configure<AlgoliaOptions>(builder.Configuration.GetSection(AlgoliaOptions.SectionName));
 builder.Services.AddScoped<IIncidenciaSearchService, AlgoliaIncidenciaSearchService>();
 
+// Cache distribuida con Redis para el listado de incidencias
+var redisConnection = builder.Configuration.GetConnectionString("RedisConnection");
+if (string.IsNullOrWhiteSpace(redisConnection))
+{
+    throw new InvalidOperationException(
+        "Connection string 'RedisConnection' not found. Definala en appsettings.Local.json " +
+        "(solo en local) o mediante la variable de entorno ConnectionStrings__RedisConnection (Render).");
+}
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConnection;
+    options.InstanceName = "ExamenParcialIncidencias:";
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
