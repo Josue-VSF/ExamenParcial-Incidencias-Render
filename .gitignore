@@ -15,7 +15,7 @@ obj/
 *.db-wal
 app.db
 
-## Credenciales locales: nunca se versionan (la clave real va aqui)
+## Credenciales locales: nunca se versionan (API Key de PieHost, Redis, Algolia, etc.)
 appsettings.Local.json
 
 ## Sistema operativo

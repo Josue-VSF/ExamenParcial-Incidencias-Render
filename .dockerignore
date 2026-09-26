@@ -5,16 +5,16 @@
 **/.vscode/
 **/.idea/
 
-## Base de datos local: en Render se recrea sola al arrancar
+## Base de datos local: en el contenedor se crea y se siembra sola al arrancar
 **/*.db
 **/*.db-shm
 **/*.db-wal
 
-## Credenciales locales: NUNCA dentro de la imagen.
-## En Render se inyectan como variables de entorno (ConnectionStrings__RedisConnection).
+## Credenciales locales: nunca dentro de la imagen.
+## En Render se inyectan como variables de entorno.
 appsettings.Local.json
 
-## Git
+## Git y metadatos del build
 .git/
 .gitignore
 Dockerfile

@@ -6,7 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Credenciales locales de desarrollo (archivo ignorado por git)
+// Credenciales locales de desarrollo (archivo ignorado por git).
+// En Render se inyectan como variables de entorno.
 builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
 // Base de datos: SQLite mediante EF Core
@@ -44,6 +45,15 @@ builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = redisConnection;
     options.InstanceName = "ExamenParcialIncidencias:";
+});
+
+// WebSocket en tiempo real con PieHost (PieSocket).
+// La API Key y el API Secret se leen de la configuracion; en appsettings.json
+// quedan en blanco y los valores reales viven fuera del repositorio.
+builder.Services.Configure<PieSocketOptions>(builder.Configuration.GetSection(PieSocketOptions.SectionName));
+builder.Services.AddHttpClient<IPieSocketPublisher, PieSocketPublisher>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(10);
 });
 
 var app = builder.Build();

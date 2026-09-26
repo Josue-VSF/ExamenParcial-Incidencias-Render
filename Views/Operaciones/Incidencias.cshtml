@@ -37,19 +37,25 @@
     }
 </p>
 
-<table class="table table-striped align-middle">
+<p>
+    Conexion con PieHost:
+    <span id="avisoConexion" class="badge text-bg-secondary">Iniciando...</span>
+</p>
+
+<table class="table table-striped align-middle" id="tablaIncidencias">
     <thead>
         <tr>
             <th scope="col">Estacion</th>
             <th scope="col">Descripcion</th>
             <th scope="col">Prioridad</th>
+            <th scope="col">Estado</th>
             <th scope="col" class="text-end">Accion</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody id="cuerpoIncidencias">
         @foreach (var incidencia in Model.Incidencias)
         {
-            <tr>
+            <tr id="incidencia-@incidencia.Id" data-incidencia-id="@incidencia.Id">
                 <td>@incidencia.Estacion</td>
                 <td>@incidencia.Descripcion</td>
                 <td>
@@ -66,6 +72,9 @@
                             break;
                     }
                 </td>
+                <td data-campo="estado">
+                    <span class="badge text-bg-primary">@incidencia.Estado</span>
+                </td>
                 <td class="text-end">
                     <form asp-controller="Operaciones" asp-action="Cerrar" method="post" class="d-inline">
                         <input type="hidden" name="id" value="@incidencia.Id" />
@@ -77,3 +86,165 @@
         }
     </tbody>
 </table>
+
+@* La configuracion viaja como JSON y no como codigo: el navegador la lee con
+   JSON.parse, de modo que la API Key nunca se concatena dentro de una cadena JS.
+   El serializador escapa <, > y &, asi que es seguro escribirlo en la vista. *@
+<script id="pieHostConfig" type="application/json">@Html.Raw(Model.ConfigJson)</script>
+
+<script>
+    (function () {
+        'use strict';
+
+        var nodoConfig = document.getElementById('pieHostConfig');
+        if (!nodoConfig) { return; }
+
+        var cfg = JSON.parse(nodoConfig.textContent);
+        var cuerpo = document.getElementById('cuerpoIncidencias');
+        var aviso = document.getElementById('avisoConexion');
+        var socket = null;
+        var intento = 0;
+
+        function marcarConexion(texto, color) {
+            if (!aviso) { return; }
+            aviso.textContent = texto;
+            aviso.className = 'badge text-bg-' + color;
+        }
+
+        if (!cfg.urlSuscripcion) {
+            marcarConexion('PieHost sin configurar', 'secondary');
+            return;
+        }
+
+        function filas() {
+            if (!cuerpo) { return []; }
+            return Array.prototype.slice.call(cuerpo.querySelectorAll('tr[data-incidencia-id]'));
+        }
+
+        // Cambia el estado de la fila en la tabla, sin recargar la pagina.
+        function aplicarEstado(id, estado) {
+            var fila = document.getElementById('incidencia-' + id);
+            if (!fila) { return false; }
+
+            var cerrada = estado === 'Cerrada';
+            var celda = fila.querySelector('[data-campo="estado"]');
+            if (celda) {
+                celda.innerHTML = cerrada
+                    ? '<span class="badge text-bg-success">Cerrada</span>'
+                    : '<span class="badge text-bg-primary">Abierta</span>';
+            }
+            fila.classList.toggle('table-success', cerrada);
+
+            var boton = fila.querySelector('button[type="submit"]');
+            if (boton && cerrada) {
+                boton.disabled = true;
+                boton.textContent = 'Cerrada';
+                boton.classList.remove('btn-outline-danger');
+                boton.classList.add('btn-outline-secondary');
+            }
+            return true;
+        }
+
+        // Consulta el estado vigente al servidor: cubre los eventos perdidos
+        // mientras el navegador estuvo desconectado.
+        function sincronizarEstadoVigente() {
+            if (!cfg.estadoUrl) { return Promise.resolve(); }
+
+            return fetch(cfg.estadoUrl, {
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            })
+                .then(function (r) {
+                    if (!r.ok) { throw new Error('HTTP ' + r.status); }
+                    return r.json();
+                })
+                .then(function (abiertas) {
+                    var idsAbiertas = new Set(abiertas.map(function (i) { return i.Id; }));
+                    filas().forEach(function (fila) {
+                        var id = Number(fila.dataset.incidenciaId);
+                        aplicarEstado(id, idsAbiertas.has(id) ? 'Abierta' : 'Cerrada');
+                    });
+                })
+                .catch(function (e) {
+                    console.warn('No se pudo sincronizar el estado vigente.', e);
+                });
+        }
+
+        function programarReintento() {
+            var anterior = socket;
+            socket = null;
+            if (anterior) {
+                try {
+                    anterior.onclose = null;
+                    anterior.close();
+                } catch (e) { /* ya estaba cerrado */ }
+            }
+            intento += 1;
+            var espera = Math.min(1000 * Math.pow(2, intento - 1), 15000);
+            setTimeout(conectar, espera);
+        }
+
+        function conectar() {
+            marcarConexion('Conectando...', 'warning');
+
+            var url = cfg.urlSuscripcion;
+
+            try {
+                socket = new WebSocket(url);
+            } catch (e) {
+                console.error('No se pudo abrir el WebSocket.', e);
+                programarReintento();
+                return;
+            }
+
+            socket.onopen = function () {
+                intento = 0;
+                marcarConexion('Conectado', 'success');
+                sincronizarEstadoVigente();
+            };
+
+            socket.onmessage = function (mensaje) {
+                var sobre;
+                try {
+                    sobre = JSON.parse(mensaje.data);
+                } catch (e) {
+                    return;
+                }
+
+                if (sobre.event === 'system:error') {
+                    marcarConexion('Error de canal', 'danger');
+                    console.error('PieHost:', sobre.data);
+                    return;
+                }
+                if (sobre.event === 'system:closed') {
+                    marcarConexion('Desconectado', 'secondary');
+                    programarReintento();
+                    return;
+                }
+                if (sobre.event === 'system:connected') {
+                    marcarConexion('Conectado', 'success');
+                    return;
+                }
+
+                if (sobre.event !== 'IncidenciaActualizada') { return; }
+
+                var datos = sobre.data;
+                if (!datos || datos.Id === undefined || datos.Id === null) { return; }
+
+                aplicarEstado(Number(datos.Id), datos.Estado);
+                console.log('IncidenciaActualizada:', datos);
+            };
+
+            socket.onclose = function () {
+                marcarConexion('Reconectando...', 'warning');
+                programarReintento();
+            };
+
+            socket.onerror = function () {
+                if (socket) { socket.close(); }
+            };
+        }
+
+        conectar();
+    })();
+</script>
