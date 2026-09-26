@@ -22,6 +22,16 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 
 builder.Services.AddControllersWithViews();
 
+// Cache distribuida con Redis para el listado de incidencias
+var redisConnection = builder.Configuration.GetConnectionString("RedisConnection")
+    ?? throw new InvalidOperationException("Connection string 'RedisConnection' not found.");
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConnection;
+    options.InstanceName = "ExamenParcialIncidencias:";
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
