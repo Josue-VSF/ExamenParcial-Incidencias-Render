@@ -1,0 +1,48 @@
+@model IEnumerable<Incidencia>
+@{
+    ViewData["Title"] = "Incidencias";
+}
+
+<h1>Incidencias abiertas</h1>
+
+<p class="text-muted">Incidencias reportadas por las estaciones y pendientes de cierre.</p>
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th scope="col">Estacion</th>
+            <th scope="col">Descripcion</th>
+            <th scope="col">Prioridad</th>
+            <th scope="col" class="text-end">Accion</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var incidencia in Model)
+        {
+            <tr>
+                <td>@incidencia.Estacion</td>
+                <td>@incidencia.Descripcion</td>
+                <td>
+                    @switch (incidencia.Prioridad)
+                    {
+                        case Prioridad.Alta:
+                            <span class="badge text-bg-danger">@incidencia.Prioridad</span>
+                            break;
+                        case Prioridad.Media:
+                            <span class="badge text-bg-warning">@incidencia.Prioridad</span>
+                            break;
+                        default:
+                            <span class="badge text-bg-secondary">@incidencia.Prioridad</span>
+                            break;
+                    }
+                </td>
+                <td class="text-end">
+                    <form asp-controller="Operaciones" asp-action="Cerrar" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@incidencia.Id" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Cerrar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
