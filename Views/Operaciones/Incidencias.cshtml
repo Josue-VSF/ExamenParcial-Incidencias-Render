@@ -3,89 +3,112 @@
     ViewData["Title"] = "Incidencias";
 }
 
-<h1>Incidencias abiertas en tiempo real</h1>
+<h1 class="h3 mb-3">Incidencias abiertas en tiempo real</h1>
 
 @if (TempData["ErrorBusqueda"] is string errorBusqueda)
 {
     <div class="alert alert-warning" role="alert">@errorBusqueda</div>
 }
 
-<form asp-controller="Operaciones" asp-action="Incidencias" method="get" class="row g-2 mb-3">
-    <div class="col-auto">
-        <input type="text" name="query" value="@Model.Query" class="form-control"
-               placeholder="Buscar por estacion o descripcion" aria-label="Buscar incidencias" />
-    </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-primary">Buscar</button>
-    </div>
-    @if (Model.ConBusqueda)
-    {
-        <div class="col-auto">
-            <a asp-controller="Operaciones" asp-action="Incidencias" class="btn btn-outline-secondary">Limpiar busqueda</a>
+<form asp-controller="Operaciones" asp-action="Incidencias" method="get" class="panel-busqueda">
+    <div class="row g-2 align-items-center">
+        <div class="col-12 col-md">
+            <input type="text" name="query" value="@Model.Query" class="form-control input-busqueda"
+                   placeholder="Buscar por estacion o descripcion" aria-label="Buscar incidencias" />
         </div>
-    }
+        <div class="col-12 col-md-auto">
+            <button type="submit" class="btn btn-primary w-100">Buscar</button>
+        </div>
+        @if (Model.ConBusqueda)
+        {
+            <div class="col-12 col-md-auto">
+                <a asp-controller="Operaciones" asp-action="Incidencias" class="btn btn-outline-secondary w-100">Limpiar busqueda</a>
+            </div>
+        }
+    </div>
 </form>
 
-<p class="text-muted">
-    @if (Model.ConBusqueda)
-    {
-        <span>@Model.Incidencias.Count incidencia(s) abierta(s) para &laquo;@Model.Query&raquo;.</span>
-    }
-    else
-    {
-        <span>Incidencias reportadas por las estaciones y pendientes de cierre.</span>
-    }
-</p>
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3">
+        <div class="tarjeta-estado abierta">
+            <div class="titulo">Abiertas</div>
+            <div class="valor">@Model.Incidencias.Count</div>
+            <div class="detalle">Pendientes de cierre</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="tarjeta-estado busqueda">
+            <div class="titulo">Resultado</div>
+            <div class="valor">@(Model.ConBusqueda ? "Busqueda" : "Listado")</div>
+            <div class="detalle">
+                @if (Model.ConBusqueda)
+                {
+                    <span>@Model.Incidencias.Count para &laquo;@Model.Query&raquo;</span>
+                }
+                else
+                {
+                    <span>Servido desde Redis</span>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6">
+        <div class="tarjeta-estado tiempo-real d-flex flex-column justify-content-center">
+            <div class="titulo">Canal en tiempo real</div>
+            <div class="mt-2">
+                <span id="avisoConexion" class="canal-estado desconectado">Iniciando...</span>
+            </div>
+            <div class="detalle">Los cierres de otros Supervisors llegan por WebSocket</div>
+        </div>
+    </div>
+</div>
 
-<p>
-    Conexion con PieHost:
-    <span id="avisoConexion" class="badge text-bg-secondary">Iniciando...</span>
-</p>
-
-<table class="table table-striped align-middle" id="tablaIncidencias">
-    <thead>
-        <tr>
-            <th scope="col">Estacion</th>
-            <th scope="col">Descripcion</th>
-            <th scope="col">Prioridad</th>
-            <th scope="col">Estado</th>
-            <th scope="col" class="text-end">Accion</th>
-        </tr>
-    </thead>
-    <tbody id="cuerpoIncidencias">
-        @foreach (var incidencia in Model.Incidencias)
-        {
-            <tr id="incidencia-@incidencia.Id" data-incidencia-id="@incidencia.Id">
-                <td>@incidencia.Estacion</td>
-                <td>@incidencia.Descripcion</td>
-                <td>
-                    @switch (incidencia.Prioridad)
-                    {
-                        case Prioridad.Alta:
-                            <span class="badge text-bg-danger">@incidencia.Prioridad</span>
-                            break;
-                        case Prioridad.Media:
-                            <span class="badge text-bg-warning">@incidencia.Prioridad</span>
-                            break;
-                        default:
-                            <span class="badge text-bg-secondary">@incidencia.Prioridad</span>
-                            break;
-                    }
-                </td>
-                <td data-campo="estado">
-                    <span class="badge text-bg-primary">@incidencia.Estado</span>
-                </td>
-                <td class="text-end">
-                    <form asp-controller="Operaciones" asp-action="Cerrar" method="post" class="d-inline">
-                        <input type="hidden" name="id" value="@incidencia.Id" />
-                        <input type="hidden" name="query" value="@Model.Query" />
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Cerrar</button>
-                    </form>
-                </td>
+<div class="table-responsive tabla-incidencias">
+    <table class="table table-striped align-middle mb-0" id="tablaIncidencias">
+        <thead>
+            <tr>
+                <th scope="col">Estacion</th>
+                <th scope="col">Descripcion</th>
+                <th scope="col">Prioridad</th>
+                <th scope="col">Estado</th>
+                <th scope="col" class="text-end">Accion</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody id="cuerpoIncidencias">
+            @foreach (var incidencia in Model.Incidencias)
+            {
+                <tr id="incidencia-@incidencia.Id" data-incidencia-id="@incidencia.Id">
+                    <td class="estacion-tag">@incidencia.Estacion</td>
+                    <td class="descripcion-incidencia">@incidencia.Descripcion</td>
+                    <td>
+                        @switch (incidencia.Prioridad)
+                        {
+                            case Prioridad.Alta:
+                                <span class="badge text-bg-danger">@incidencia.Prioridad</span>
+                                break;
+                            case Prioridad.Media:
+                                <span class="badge text-bg-warning">@incidencia.Prioridad</span>
+                                break;
+                            default:
+                                <span class="badge text-bg-secondary">@incidencia.Prioridad</span>
+                                break;
+                        }
+                    </td>
+                    <td data-campo="estado">
+                        <span class="badge text-bg-primary">@incidencia.Estado</span>
+                    </td>
+                    <td class="text-end">
+                        <form asp-controller="Operaciones" asp-action="Cerrar" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@incidencia.Id" />
+                            <input type="hidden" name="query" value="@Model.Query" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Cerrar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
 @* La configuracion viaja como JSON y no como codigo: el navegador la lee con
    JSON.parse, de modo que la API Key nunca se concatena dentro de una cadena JS.
@@ -105,14 +128,14 @@
         var socket = null;
         var intento = 0;
 
-        function marcarConexion(texto, color) {
+        function marcarConexion(texto, estado) {
             if (!aviso) { return; }
             aviso.textContent = texto;
-            aviso.className = 'badge text-bg-' + color;
+            aviso.className = 'canal-estado ' + estado;
         }
 
         if (!cfg.urlSuscripcion) {
-            marcarConexion('PieHost sin configurar', 'secondary');
+            marcarConexion('PieHost sin configurar', 'sin-configurar');
             return;
         }
 
@@ -133,7 +156,7 @@
                     ? '<span class="badge text-bg-success">Cerrada</span>'
                     : '<span class="badge text-bg-primary">Abierta</span>';
             }
-            fila.classList.toggle('table-success', cerrada);
+            fila.classList.toggle('fila-cerrada', cerrada);
 
             var boton = fila.querySelector('button[type="submit"]');
             if (boton && cerrada) {
@@ -181,11 +204,12 @@
             }
             intento += 1;
             var espera = Math.min(1000 * Math.pow(2, intento - 1), 15000);
+            marcarConexion('Reconectando...', 'reconectando');
             setTimeout(conectar, espera);
         }
 
         function conectar() {
-            marcarConexion('Conectando...', 'warning');
+            marcarConexion('Conectando...', 'conectando');
 
             var url = cfg.urlSuscripcion;
 
@@ -199,7 +223,7 @@
 
             socket.onopen = function () {
                 intento = 0;
-                marcarConexion('Conectado', 'success');
+                marcarConexion('Conectado', 'conectado');
                 sincronizarEstadoVigente();
             };
 
@@ -212,17 +236,17 @@
                 }
 
                 if (sobre.event === 'system:error') {
-                    marcarConexion('Error de canal', 'danger');
+                    marcarConexion('Error de canal', 'error');
                     console.error('PieHost:', sobre.data);
                     return;
                 }
                 if (sobre.event === 'system:closed') {
-                    marcarConexion('Desconectado', 'secondary');
+                    marcarConexion('Desconectado', 'desconectado');
                     programarReintento();
                     return;
                 }
                 if (sobre.event === 'system:connected') {
-                    marcarConexion('Conectado', 'success');
+                    marcarConexion('Conectado', 'conectado');
                     return;
                 }
 
@@ -236,7 +260,7 @@
             };
 
             socket.onclose = function () {
-                marcarConexion('Reconectando...', 'warning');
+                marcarConexion('Reconectando...', 'reconectando');
                 programarReintento();
             };
 

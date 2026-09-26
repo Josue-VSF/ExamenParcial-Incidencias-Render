@@ -1,3 +1,4 @@
+using ExamenParcial_Incidencias_Render.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,8 @@ public static class DbInitializer
         var context = provider.GetRequiredService<ApplicationDbContext>();
         var roleManager = provider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = provider.GetRequiredService<UserManager<ApplicationUser>>();
+        var indexador = provider.GetRequiredService<IIncidenciaIndexer>();
+        var logger = provider.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(DbInitializer));
 
         await context.Database.MigrateAsync();
 
@@ -51,5 +54,12 @@ public static class DbInitializer
             await context.Incidencias.AddRangeAsync(DatosPrueba.Crear());
             await context.SaveChangesAsync();
         }
+
+        // El indice de Algolia se reconstruye en cada arranque: SQLite manda y
+        // el indice se vuelve a alinear, de modo que un despliegue nuevo en
+        // Render no dependa de lo que hubiera quedado almacenado antes.
+        await indexador.SincronizarTodoAsync(await context.Incidencias.ToListAsync());
+
+        logger.LogInformation("Base de datos lista con {Cantidad} incidencia(s)", await context.Incidencias.CountAsync());
     }
 }

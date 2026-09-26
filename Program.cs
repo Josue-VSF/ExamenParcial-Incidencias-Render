@@ -32,6 +32,7 @@ builder.Services.AddControllersWithViews();
 // Busqueda en Algolia: las credenciales se leen de IConfiguration y solo viven en el servidor
 builder.Services.Configure<AlgoliaOptions>(builder.Configuration.GetSection(AlgoliaOptions.SectionName));
 builder.Services.AddScoped<IIncidenciaSearchService, AlgoliaIncidenciaSearchService>();
+builder.Services.AddScoped<IIncidenciaIndexer, AlgoliaIncidenciaIndexer>();
 
 // Cache distribuida con Redis para el listado de incidencias
 var redisConnection = builder.Configuration.GetConnectionString("RedisConnection");

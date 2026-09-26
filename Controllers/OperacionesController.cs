@@ -19,6 +19,7 @@ public class OperacionesController : Controller
 
     private readonly ApplicationDbContext _context;
     private readonly IIncidenciaSearchService _buscador;
+    private readonly IIncidenciaIndexer _indexador;
     private readonly IDistributedCache _cache;
     private readonly IPieSocketPublisher _pieHost;
     private readonly PieSocketOptions _pieHostOpciones;
@@ -27,6 +28,7 @@ public class OperacionesController : Controller
     public OperacionesController(
         ApplicationDbContext context,
         IIncidenciaSearchService buscador,
+        IIncidenciaIndexer indexador,
         IDistributedCache cache,
         IPieSocketPublisher pieHost,
         IOptions<PieSocketOptions> opciones,
@@ -34,6 +36,7 @@ public class OperacionesController : Controller
     {
         _context = context;
         _buscador = buscador;
+        _indexador = indexador;
         _cache = cache;
         _pieHost = pieHost;
         _pieHostOpciones = opciones.Value;
@@ -176,7 +179,10 @@ public class OperacionesController : Controller
             CacheKeyIncidencias,
             id);
 
-        // 3) Con la persistencia confirmada, se publica el evento en PieHost
+        // 3) Se actualiza el documento en el indice de Algolia.
+        await _indexador.ActualizarAsync(incidencia);
+
+        // 4) Con la persistencia confirmada, se publica el evento en PieHost
         //    para que las demas vistas actualicen la fila sin recargar.
         await _pieHost.PublicarAsync(
             "IncidenciaActualizada",

@@ -1,0 +1,51 @@
+# Blueprint de Render: https://render.com/docs/blueprint-spec
+#
+# Render lo detecta solo al conectar el repositorio con "New > Blueprint".
+# Las variables marcadas con sync: false NO se pueden autogenerar: hay que
+# escribirlas a mano en el panel antes del primer deploy.
+
+services:
+  - type: web
+    name: incidencias-bici
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+
+      # ---------- Redis (obligatoria: la app no arranca sin ella) ----------
+      - key: ConnectionStrings__RedisConnection
+        sync: false
+
+      # ---------- Algolia ----------
+      - key: Algolia__ApplicationId
+        sync: false
+      - key: Algolia__ApiKey
+        sync: false
+      # Necesaria para crear y sincronizar el indice. Sin ella la app arranca,
+      # pero no escribe en Algolia (la Search API Key da 403 missing ACL).
+      - key: Algolia__AdminApiKey
+        sync: false
+      - key: Algolia__IndexName
+        value: incidencias
+
+      # ---------- PieHost (PieSocket) ----------
+      - key: PieSocket__ApiKey
+        sync: false
+      - key: PieSocket__ApiSecret
+        sync: false
+      - key: PieSocket__ClusterId
+        sync: false
+      - key: PieSocket__RoomId
+        sync: false
+
+# Si montas un disco persistente, descomenta y ajusta la ruta en el panel con
+# ConnectionStrings__DefaultConnection = "Data Source=/var/data/incidencias.db"
+#
+# disk:
+#   name: incidencias-data
+#   mountPath: /var/data
+#   sizeGB: 1

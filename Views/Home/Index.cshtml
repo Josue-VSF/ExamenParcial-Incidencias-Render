@@ -1,8 +1,51 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="portada">
+    <h1 class="display-5">Gestion de incidencias de bicicletas</h1>
+    <p class="lead">
+        Panel de operaciones para registrar, buscar y cerrar las incidencias reportadas
+        por las estaciones. Busca con Algolia, acelera el listado con Redis y recibe los
+        cambios en tiempo real por WebSocket.
+    </p>
+    <a class="btn btn-light btn-lg mt-2" asp-controller="Operaciones" asp-action="Incidencias">
+        Ver incidencias
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="tarjeta-estado">
+            <div class="titulo">Busqueda</div>
+            <div class="valor">Algolia</div>
+            <div class="detalle">Por estacion y descripcion</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="tarjeta-estado">
+            <div class="titulo">Cache</div>
+            <div class="valor">Redis</div>
+            <div class="detalle">Listado abierto durante 60 segundos</div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="tarjeta-estado">
+            <div class="titulo">Tiempo real</div>
+            <div class="valor">PieHost</div>
+            <div class="detalle">Cierres reflejados al instante</div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 card-title">Como funciona</h2>
+        <ul class="text-secondary mb-0">
+            <li>Solo el rol <strong>Supervisor</strong> accede al listado de incidencias.</li>
+            <li>El listado de incidencias abiertas se sirve desde Redis y se invalida al cerrar.</li>
+            <li>La busqueda por texto se resuelve en el indice de Algolia y se filtra en SQLite.</li>
+            <li>Al cerrar una incidencia se publica el evento <code>IncidenciaActualizada</code> en PieHost.</li>
+        </ul>
+    </div>
 </div>

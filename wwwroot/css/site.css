@@ -1,5 +1,7 @@
 html {
   font-size: 14px;
+  position: relative;
+  min-height: 100%;
 }
 
 @media (min-width: 768px) {
@@ -8,36 +10,22 @@ html {
   }
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
 body {
   margin-bottom: 60px;
+  background-color: #f5f7fb;
+  color: #1f2933;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
-}
-
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
-}
-
-a.navbar-brand {
-  white-space: normal;
-  text-align: center;
-  word-break: break-all;
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #1b6ec2;
 }
 
 a {
-  color: #0077cc;
+  color: #1b6ec2;
 }
 
 .btn-primary {
@@ -46,7 +34,8 @@ a {
   border-color: #1861ac;
 }
 
-.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
   color: #fff;
   background-color: #1b6ec2;
   border-color: #1861ac;
@@ -61,7 +50,7 @@ a {
 }
 
 .box-shadow {
-  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
 }
 
 .footer {
@@ -70,4 +59,232 @@ a {
   width: 100%;
   white-space: nowrap;
   line-height: 60px;
+}
+
+a.navbar-brand {
+  white-space: normal;
+  word-break: break-all;
+  font-weight: 600;
+}
+
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+/* ---------- Barra de navegacion ---------- */
+
+.navbar-app {
+  background: linear-gradient(90deg, #14385f 0%, #1b6ec2 100%);
+}
+
+.navbar-app .navbar-brand,
+.navbar-app .nav-link {
+  color: #fff;
+}
+
+.navbar-app .nav-link:hover,
+.navbar-app .nav-link:focus {
+  color: #cfe2ff;
+}
+
+.navbar-app .nav-link.active {
+  color: #fff;
+  font-weight: 600;
+}
+
+.navbar-app .btn-link {
+  color: #fff;
+  text-decoration: none;
+}
+
+/* ---------- Portada ---------- */
+
+.portada {
+  background: linear-gradient(135deg, #14385f 0%, #1b6ec2 55%, #2f8fdd 100%);
+  color: #fff;
+  border-radius: 1rem;
+  padding: 3rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.portada h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.portada p {
+  color: #d8e8fb;
+  max-width: 60ch;
+}
+
+.portada .btn-light {
+  font-weight: 600;
+}
+
+/* ---------- Tarjetas de estado ---------- */
+
+.tarjeta-estado {
+  border: 0;
+  border-left: 4px solid #1b6ec2;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.125rem 0.5rem rgba(15, 23, 42, 0.08);
+  background: #fff;
+  height: 100%;
+}
+
+.tarjeta-estado .titulo {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.tarjeta-estado .valor {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.tarjeta-estado .detalle {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.tarjeta-estado.abierta {
+  border-left-color: #dc3545;
+}
+
+.tarjeta-estado.cerrada {
+  border-left-color: #198754;
+}
+
+.tarjeta-estado.busqueda {
+  border-left-color: #6f42c1;
+}
+
+.tarjeta-estado.tiempo-real {
+  border-left-color: #0d6efd;
+}
+
+/* ---------- Tabla de incidencias ---------- */
+
+.tabla-incidencias {
+  background: #fff;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 0.125rem 0.5rem rgba(15, 23, 42, 0.08);
+}
+
+.tabla-incidencias thead th {
+  background: #f1f5f9;
+  border-bottom-width: 1px;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.tabla-incidencias tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tabla-incidencias tbody tr.fila-cerrada {
+  background-color: #f8fafc;
+  color: #94a3b8;
+}
+
+.estacion-tag {
+  font-weight: 600;
+  color: #14385f;
+}
+
+.descripcion-incidencia {
+  color: #475569;
+  max-width: 46ch;
+}
+
+/* ---------- Buscador ---------- */
+
+.panel-busqueda {
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 0.125rem 0.5rem rgba(15, 23, 42, 0.08);
+  margin-bottom: 1.5rem;
+}
+
+.input-busqueda {
+  border-radius: 0.5rem;
+}
+
+/* ---------- Estado del canal en tiempo real ---------- */
+
+.canal-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+}
+
+.canal-estado::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.canal-estado.conectado {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.canal-estado.conectado::before {
+  animation: latido 1.6s ease-in-out infinite;
+}
+
+.canal-estado.conectando,
+.canal-estado.reconectando {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.canal-estado.sin-configurar,
+.canal-estado.desconectado {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.canal-estado.error {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+@keyframes latido {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canal-estado.conectado::before {
+    animation: none;
+  }
+}
+
+/* ---------- Pie de pagina ---------- */
+
+.footer {
+  color: #64748b;
+  font-size: 0.85rem;
 }
