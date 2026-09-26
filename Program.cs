@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Credenciales locales de desarrollo (archivo ignorado por git)
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
+
 // Base de datos: SQLite mediante EF Core
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -23,8 +26,13 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 builder.Services.AddControllersWithViews();
 
 // Cache distribuida con Redis para el listado de incidencias
-var redisConnection = builder.Configuration.GetConnectionString("RedisConnection")
-    ?? throw new InvalidOperationException("Connection string 'RedisConnection' not found.");
+var redisConnection = builder.Configuration.GetConnectionString("RedisConnection");
+if (string.IsNullOrWhiteSpace(redisConnection))
+{
+    throw new InvalidOperationException(
+        "Connection string 'RedisConnection' not found. Definala en appsettings.Local.json " +
+        "(solo en local) o mediante la variable de entorno ConnectionStrings__RedisConnection (Render).");
+}
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
