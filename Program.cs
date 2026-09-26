@@ -1,8 +1,13 @@
 using ExamenParcial_Incidencias_Render.Data;
+using ExamenParcial_Incidencias_Render.Models;
+using ExamenParcial_Incidencias_Render.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Credenciales locales de desarrollo (archivo ignorado por git)
+builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: true);
 
 // Base de datos: SQLite mediante EF Core
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -21,6 +26,10 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews();
+
+// Busqueda en Algolia: las credenciales se leen de IConfiguration y solo viven en el servidor
+builder.Services.Configure<AlgoliaOptions>(builder.Configuration.GetSection(AlgoliaOptions.SectionName));
+builder.Services.AddScoped<IIncidenciaSearchService, AlgoliaIncidenciaSearchService>();
 
 var app = builder.Build();
 

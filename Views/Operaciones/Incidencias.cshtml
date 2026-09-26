@@ -1,11 +1,41 @@
-@model IEnumerable<Incidencia>
+@model IncidenciasViewModel
 @{
     ViewData["Title"] = "Incidencias";
 }
 
-<h1>Incidencias abiertas</h1>
+<h1>Incidencias abiertas encontradas</h1>
 
-<p class="text-muted">Incidencias reportadas por las estaciones y pendientes de cierre.</p>
+@if (TempData["ErrorBusqueda"] is string errorBusqueda)
+{
+    <div class="alert alert-warning" role="alert">@errorBusqueda</div>
+}
+
+<form asp-controller="Operaciones" asp-action="Incidencias" method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <input type="text" name="query" value="@Model.Query" class="form-control"
+               placeholder="Buscar por estacion o descripcion" aria-label="Buscar incidencias" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </div>
+    @if (Model.ConBusqueda)
+    {
+        <div class="col-auto">
+            <a asp-controller="Operaciones" asp-action="Incidencias" class="btn btn-outline-secondary">Limpiar busqueda</a>
+        </div>
+    }
+</form>
+
+<p class="text-muted">
+    @if (Model.ConBusqueda)
+    {
+        <span>@Model.Incidencias.Count incidencia(s) abierta(s) para &laquo;@Model.Query&raquo;.</span>
+    }
+    else
+    {
+        <span>Incidencias reportadas por las estaciones y pendientes de cierre.</span>
+    }
+</p>
 
 <table class="table table-striped align-middle">
     <thead>
@@ -17,7 +47,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var incidencia in Model)
+        @foreach (var incidencia in Model.Incidencias)
         {
             <tr>
                 <td>@incidencia.Estacion</td>
@@ -39,6 +69,7 @@
                 <td class="text-end">
                     <form asp-controller="Operaciones" asp-action="Cerrar" method="post" class="d-inline">
                         <input type="hidden" name="id" value="@incidencia.Id" />
+                        <input type="hidden" name="query" value="@Model.Query" />
                         <button type="submit" class="btn btn-sm btn-outline-danger">Cerrar</button>
                     </form>
                 </td>

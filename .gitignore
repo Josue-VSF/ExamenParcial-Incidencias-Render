@@ -15,6 +15,9 @@ obj/
 *.db-wal
 app.db
 
+## Credenciales locales: nunca se versionan (la clave real va aqui)
+appsettings.Local.json
+
 ## Sistema operativo
 Thumbs.db
 .DS_Store
