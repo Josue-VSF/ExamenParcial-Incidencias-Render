@@ -37,7 +37,7 @@ public class OperacionesController : Controller
             Incidencias = incidencias,
             ConfigJson = System.Text.Json.JsonSerializer.Serialize(new
             {
-                apiKey = _pieHostOpciones.ApiKey,
+                urlSuscripcion = _pieHostOpciones.UrlSuscripcion,
                 clusterId = _pieHostOpciones.ClusterId,
                 roomId = _pieHostOpciones.RoomId,
                 estadoUrl = Url.Action(nameof(IncidenciasEstado)) ?? string.Empty

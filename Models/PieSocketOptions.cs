@@ -15,6 +15,10 @@ public class PieSocketOptions
 
     public string RoomId { get; set; } = string.Empty;
 
+    /// URL del WebSocket. Si se deja vacia se construye con ClusterId y RoomId.
+    /// Se lee de la configuracion para no fijar ninguna URL en el codigo.
+    public string WebSocketUrl { get; set; } = string.Empty;
+
     public bool EstaConfigurado =>
         !string.IsNullOrWhiteSpace(ApiKey) &&
         !string.IsNullOrWhiteSpace(ApiSecret) &&
@@ -24,5 +28,7 @@ public class PieSocketOptions
     public string UrlPublicacion => $"https://{ClusterId}.piesocket.com/api/publish";
 
     public string UrlSuscripcion =>
-        $"wss://{ClusterId}.piesocket.com/v4/{RoomId}?api_key={ApiKey}&notify_self=1";
+        string.IsNullOrWhiteSpace(WebSocketUrl)
+            ? $"wss://{ClusterId}.piesocket.com/v4/{RoomId}?api_key={ApiKey}&notify_self=1"
+            : WebSocketUrl;
 }

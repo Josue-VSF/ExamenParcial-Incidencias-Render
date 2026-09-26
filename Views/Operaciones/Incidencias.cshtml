@@ -80,7 +80,7 @@
             aviso.className = 'badge text-bg-' + color;
         }
 
-        if (!cfg.apiKey || !cfg.clusterId || !cfg.roomId) {
+        if (!cfg.urlSuscripcion) {
             marcarConexion('PieHost sin configurar', 'secondary');
             return;
         }
@@ -156,9 +156,7 @@
         function conectar() {
             marcarConexion('Conectando...', 'warning');
 
-            var url = 'wss://' + cfg.clusterId + '.piesocket.com/v4/' +
-                encodeURIComponent(cfg.roomId) +
-                '?api_key=' + encodeURIComponent(cfg.apiKey) + '&notify_self=1';
+            var url = cfg.urlSuscripcion;
 
             try {
                 socket = new WebSocket(url);

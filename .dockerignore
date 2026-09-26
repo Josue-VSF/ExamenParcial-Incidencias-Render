@@ -1,0 +1,21 @@
+## Artefactos de compilacion
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.idea/
+
+## Base de datos local: en el contenedor se crea y se siembra sola al arrancar
+**/*.db
+**/*.db-shm
+**/*.db-wal
+
+## Credenciales locales: nunca dentro de la imagen.
+## En Render se inyectan como variables de entorno.
+appsettings.Local.json
+
+## Git y metadatos del build
+.git/
+.gitignore
+Dockerfile
+.dockerignore
