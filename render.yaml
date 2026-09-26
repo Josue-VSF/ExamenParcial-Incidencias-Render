@@ -1,17 +1,29 @@
 # Blueprint de Render: https://render.com/docs/blueprint-spec
 #
-# Render lo detecta solo al conectar el repositorio con "New > Blueprint".
-# Las variables marcadas con sync: false NO se pueden autogenerar: hay que
-# escribirlas a mano en el panel antes del primer deploy.
+# IMPORTANTE: el servicio se despliega con Docker, no con un runtime nativo.
+# Si en el dashboard el "Environment" dice Node, Python o similar, Render ignora
+# este Dockerfile y usa su buildpack: por eso fallaba con
+# "dotnet: command not found". El runtime debe ser Docker.
+#
+# Ojo con el nombre del campo: la spec actual usa "runtime: docker". El campo
+# "env: docker" que aparece en tutoriales viejos esta deprecado y fue sustituido
+# por "runtime", asi que no debe anadirse.
+#
+# Con runtime: docker no hace falta buildCommand ni startCommand: Render compila
+# el Dockerfile y ejecuta su ENTRYPOINT, que ya escucha en $PORT.
 
 services:
   - type: web
     name: incidencias-bici
+    # "runtime" sustituye al campo deprecado "env". Este es el campo que obliga
+    # a Render a construir la imagen del Dockerfile.
     runtime: docker
     dockerfilePath: ./Dockerfile
+    dockerContext: .
     plan: free
     healthCheckPath: /
-    autoDeploy: true
+    # "autoDeployTrigger" sustituye al deprecado "autoDeploy: true"
+    autoDeployTrigger: commit
     envVars:
       - key: ASPNETCORE_ENVIRONMENT
         value: Production
